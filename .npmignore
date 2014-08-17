@@ -1,0 +1,12 @@
+.env
+.istanbul.yml
+.jscs.json
+.jshintrc
+.npmignore
+.rock.yml
+config
+coverage
+example.js
+npm-shrinkwrap.json
+test
+tmp

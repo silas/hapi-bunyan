@@ -1,0 +1,7 @@
+*.log
+*swp
+.DS_Store
+coverage
+example.js
+node_modules
+npm-shrinkwrap.json
