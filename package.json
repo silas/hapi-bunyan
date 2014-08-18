@@ -1,6 +1,6 @@
 {
   "name": "hapi-bunyan",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "main": "./lib",
   "description": "Simple Bunyan logging in Hapi",
   "devDependencies": {
@@ -26,5 +26,8 @@
   "bugs": {
     "url": "https://github.com/silas/hapi-bunyan/issues"
   },
-  "homepage": "https://github.com/silas/hapi-bunyan"
+  "homepage": "https://github.com/silas/hapi-bunyan",
+  "dependencies": {
+    "hoek": "^2.4.1"
+  }
 }

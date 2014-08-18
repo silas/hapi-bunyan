@@ -7,8 +7,12 @@ This a simple [Bunyan][bunyan] plugin for Hapi.
 Options
 
  * logger (Object): Bunyan logger object
- * handler (Function, optional): Custom event handler, this function can return true if it handled the event. The call has `log`, `level`, and `logUndefined` binded to `this`. Both `level` and `logUndefined` can be modified in place.
- * logUndefined (Boolean, default: false): Show events events with no data.
+ * handler (Function, optional): custom event handler, this function can return `true` if it handled the event.
+ * skipUndefined (Boolean, default: true): don't log events with `undefined` data.
+ * includeData (Boolean, default: true): include data in log events.
+ * mergeData (Boolean, default: false): when the event data is an object merge it into the log data.
+ * includeTags (Boolean, default: false): include tags in log event.
+ * joinTags (String, optional): join tags using the specified character.
 
 ## Example
 
