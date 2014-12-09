@@ -20,7 +20,8 @@ Options
 var bunyan = require('bunyan');
 var hapi = require('hapi');
 
-var server = new hapi.Server(8000);
+var server = new hapi.Server();
+server.connection({ port: 8000 });
 
 server.route({
   method: 'GET',
@@ -33,13 +34,13 @@ server.route({
 });
 
 var config = {
-  plugin: require('hapi-bunyan'),
+  register: require('hapi-bunyan'),
   options: {
     logger: bunyan.createLogger({ name: 'test', level: 'debug' }),
   },
 };
 
-server.pack.register(config, function(err) {
+server.register(config, function(err) {
   if (err) throw err;
 });
 
