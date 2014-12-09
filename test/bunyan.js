@@ -54,9 +54,10 @@ lab.experiment('bunyan', function() {
 
   lab.test('logger requirement', function(done) {
     var server = new hapi.Server();
+    server.connection();
 
-    server.pack.register({
-      plugin: require('../lib'),
+    server.register({
+      register: require('../lib'),
     }, function(err) {
       expect(err).to.exist;
 
@@ -66,9 +67,10 @@ lab.experiment('bunyan', function() {
 
   lab.test('logger requirement', function(done) {
     var server = new hapi.Server();
+    server.connection();
 
-    server.pack.register({
-      plugin: require('../lib'),
+    server.register({
+      register: require('../lib'),
     }, function(err) {
       expect(err).to.exist;
 
@@ -79,6 +81,7 @@ lab.experiment('bunyan', function() {
   lab.test('log event', function(done) {
     var logger = new Logger();
     var server = new hapi.Server();
+    server.connection();
 
     var last;
 
@@ -86,8 +89,8 @@ lab.experiment('bunyan', function() {
       last = Array.prototype.slice.call(arguments);
     }
 
-    server.pack.register({
-      plugin: require('../lib'),
+    server.register({
+      register: require('../lib'),
       options: {
         handler: handler,
         logger: logger,
@@ -114,6 +117,7 @@ lab.experiment('bunyan', function() {
   lab.test('request event', function(done) {
     var logger = new Logger();
     var server = new hapi.Server();
+    server.connection();
 
     server.route({
       method: 'GET',
@@ -130,8 +134,8 @@ lab.experiment('bunyan', function() {
       },
     });
 
-    server.pack.register({
-      plugin: require('../lib'),
+    server.register({
+      register: require('../lib'),
       options: {
         logger: logger,
       },

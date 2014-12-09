@@ -5,7 +5,7 @@
   "description": "Simple Bunyan logging in Hapi",
   "devDependencies": {
     "bunyan": "^1.0.0",
-    "hapi": "^6.1.0",
+    "hapi": "^8.0.0-rc9",
     "jscs": "^1.5.9",
     "jshint": "^2.5.3",
     "lab": "^4.0.2"
