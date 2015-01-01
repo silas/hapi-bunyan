@@ -6,7 +6,7 @@
 .rock.yml
 config
 coverage
-example.js
+hack.js
 npm-shrinkwrap.json
 test
 tmp

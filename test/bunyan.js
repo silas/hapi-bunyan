@@ -165,4 +165,31 @@ lab.experiment('bunyan', function() {
       });
     });
   });
+
+  lab.test('request error', function(done) {
+    var logger = new Logger();
+    var server = new hapi.Server({ debug: false });
+    server.connection();
+
+    server.route({
+      method: 'GET',
+      path: '/',
+      handler: function() {
+        throw new Error('fail');
+      },
+    });
+
+    server.register({
+      register: require('../lib'),
+      options: {
+        logger: logger,
+      },
+    }, function(err) {
+      expect(err).not.to.exist;
+
+      server.inject('/', function() {
+        done();
+      });
+    });
+  });
 });

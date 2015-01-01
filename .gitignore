@@ -3,5 +3,6 @@
 .DS_Store
 coverage
 example.js
+hack.js
 node_modules
 npm-shrinkwrap.json
