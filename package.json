@@ -1,6 +1,6 @@
 {
   "name": "hapi-bunyan",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "main": "./lib",
   "description": "Simple Bunyan logging in Hapi",
   "dependencies": {

@@ -125,6 +125,7 @@ lab.experiment('bunyan', function() {
       handler: function(request, reply) {
         request.log(['tester'], 'hello world');
         request.log.trace('test-trace');
+        request.log.error('test-error');
 
         LEVELS.forEach(function(level) {
           expect(request.log).to.have.property(level);
@@ -155,11 +156,13 @@ lab.experiment('bunyan', function() {
 
         expect(helloEntry[1]).to.equal('hello world');
 
-        var trace = logger.data.trace;
+        ['error', 'trace'].forEach(function(level) {
+          var l = logger.data[level];
 
-        expect(trace).to.be.an('array');
-        expect(trace).to.not.be.empty;
-        expect(trace[0][0]).to.equal('test-trace');
+          expect(l).to.be.an('array');
+          expect(l).to.not.be.empty;
+          expect(l[0][0]).to.equal('test-' + level);
+        });
 
         done();
       });
