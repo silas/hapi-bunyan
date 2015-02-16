@@ -6,6 +6,7 @@
  * Module dependencies.
  */
 
+var expect = require('code').expect;
 var hapi = require('hapi');
 
 /**
@@ -44,7 +45,6 @@ Logger.prototype.child = function() {
  */
 
 var lab = exports.lab = require('lab').script();
-var expect = require('lab').expect;
 
 /**
  * Plugin.
@@ -59,7 +59,7 @@ lab.experiment('bunyan', function() {
     server.register({
       register: require('../lib'),
     }, function(err) {
-      expect(err).to.exist;
+      expect(err).to.exist();
 
       done();
     });
@@ -72,7 +72,7 @@ lab.experiment('bunyan', function() {
     server.register({
       register: require('../lib'),
     }, function(err) {
-      expect(err).to.exist;
+      expect(err).to.exist();
 
       done();
     });
@@ -96,18 +96,18 @@ lab.experiment('bunyan', function() {
         logger: logger,
       },
     }, function(err) {
-      expect(err).not.to.exist;
+      expect(err).not.to.exist();
 
       server.log(['test'], 'server-test');
       server.log(['error'], 'server-error');
 
-      expect(last).to.be.an('array');
+      expect(last).to.be.an.array();
       expect(last.length).to.equal(3);
       expect(last[0]).to.equal('log');
-      expect(last[1]).to.be.an('object');
+      expect(last[1]).to.be.an.object();
       expect(last[1].data).to.equal('server-error');
-      expect(last[2]).to.be.an('object');
-      expect(last[2]).to.have.property('error');
+      expect(last[2]).to.be.an.object();
+      expect(last[2]).to.have.include('error');
       expect(last[2].error).to.equal(true);
 
       done();
@@ -128,7 +128,7 @@ lab.experiment('bunyan', function() {
         request.log.error('test-error');
 
         LEVELS.forEach(function(level) {
-          expect(request.log).to.have.property(level);
+          expect(request.log).to.include(level);
         });
 
         reply({ hello: 'world' });
@@ -141,15 +141,15 @@ lab.experiment('bunyan', function() {
         logger: logger,
       },
     }, function(err) {
-      expect(err).not.to.exist;
+      expect(err).not.to.exist();
 
       server.inject('/', function() {
         var helloEntry;
 
         logger.data.info.forEach(function(data) {
-          expect(data).to.be.an('array');
-          expect(data).to.not.be.empty;
-          expect(data[0]).to.have.property('req_id');
+          expect(data).to.be.an.array();
+          expect(data).to.not.be.empty();
+          expect(data[0]).to.include('req_id');
 
           if (data[1]) helloEntry = data;
         });
@@ -159,8 +159,8 @@ lab.experiment('bunyan', function() {
         ['error', 'trace'].forEach(function(level) {
           var l = logger.data[level];
 
-          expect(l).to.be.an('array');
-          expect(l).to.not.be.empty;
+          expect(l).to.be.an.array();
+          expect(l).to.not.be.empty();
           expect(l[0][0]).to.equal('test-' + level);
         });
 
@@ -188,7 +188,7 @@ lab.experiment('bunyan', function() {
         logger: logger,
       },
     }, function(err) {
-      expect(err).not.to.exist;
+      expect(err).not.to.exist();
 
       server.inject('/', function() {
         done();
