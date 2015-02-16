@@ -1,4 +1,4 @@
-# Hapi Bunyan
+# Hapi Bunyan [![Build Status](https://travis-ci.org/silas/hapi-bunyan.png?branch=master)](https://travis-ci.org/silas/hapi-bunyan)
 
 This a simple [Bunyan][bunyan] plugin for Hapi.
 
