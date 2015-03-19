@@ -1,6 +1,6 @@
 {
   "name": "hapi-bunyan",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "main": "./lib",
   "description": "Simple Bunyan logging in Hapi",
   "dependencies": {
@@ -15,7 +15,7 @@
     "lab": "^5.2.1"
   },
   "scripts": {
-    "test": "./node_modules/.bin/jshint lib test && ./node_modules/.bin/jscs lib test && ./node_modules/.bin/lab -c"
+    "test": "./node_modules/.bin/jshint lib test && ./node_modules/.bin/jscs lib test && ./node_modules/.bin/lab -c -t 100"
   },
   "repository": {
     "type": "git",

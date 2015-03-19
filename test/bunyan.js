@@ -47,9 +47,7 @@ lab.experiment('bunyan', function() {
     var server = new hapi.Server();
     server.connection();
 
-    server.register({
-      register: require('../lib'),
-    }, function(err) {
+    server.register({ register: require('../lib') }, function(err) {
       expect(err).to.exist();
 
       done();
@@ -60,9 +58,7 @@ lab.experiment('bunyan', function() {
     var server = new hapi.Server();
     server.connection();
 
-    server.register({
-      register: require('../lib'),
-    }, function(err) {
+    server.register({ register: require('../lib') }, function(err) {
       expect(err).to.exist();
 
       done();
@@ -76,16 +72,13 @@ lab.experiment('bunyan', function() {
 
     var last;
 
-    function handler() {
+    var handler = function() {
       last = Array.prototype.slice.call(arguments);
-    }
+    };
 
     server.register({
       register: require('../lib'),
-      options: {
-        handler: handler,
-        logger: logger,
-      },
+      options: { logger: logger, handler: handler },
     }, function(err) {
       expect(err).not.to.exist();
 
@@ -124,9 +117,7 @@ lab.experiment('bunyan', function() {
 
     server.register({
       register: require('../lib'),
-      options: {
-        logger: logger,
-      },
+      options: { logger: logger },
     }, function(err) {
       expect(err).not.to.exist();
 
@@ -172,9 +163,7 @@ lab.experiment('bunyan', function() {
 
     server.register({
       register: require('../lib'),
-      options: {
-        logger: logger,
-      },
+      options: { logger: logger },
     }, function(err) {
       expect(err).not.to.exist();
 
@@ -188,6 +177,148 @@ lab.experiment('bunyan', function() {
         expect(records[1].err.name).to.include('Error');
         expect(records[1].err).to.include('stack');
         expect(records[1].msg).to.equal('Uncaught error: fail');
+
+        done();
+      });
+    });
+  });
+
+  lab.test('handle bad data', function(done) {
+    var logger = make();
+    var server = new hapi.Server();
+    server.connection();
+
+    server.route({
+      method: 'GET',
+      path: '/',
+      handler: function(request, reply) {
+        request.connection.emit('request-internal', request, null, true);
+
+        reply({ hello: 'world' });
+      },
+    });
+
+    server.register({
+      register: require('../lib'),
+      options: { logger: logger },
+    }, function(err) {
+      expect(err).not.to.exist();
+
+      server.inject('/', function() {
+        done();
+      });
+    });
+  });
+
+  lab.test('handle ctx options', function(done) {
+    var logger = make();
+    var server = new hapi.Server();
+    server.connection();
+
+    server.route({
+      method: 'GET',
+      path: '/',
+      handler: function(request, reply) {
+        request.log(['trace'], { test: 'includeTags' });
+        request.log(['debug'], { test: 'joinTags' });
+        request.log(['info'], { test: 'includeData' });
+        request.log(['warn'], { test: 'mergeData' });
+        request.log(['error'], { test: 'mergeData delete id' });
+        request.log(['fatal'], { test: 'mergeData not object' });
+        request.log(['fatal'], { test: 'mergeData array' });
+        request.log(['fatal'], { test: 'skipUndefined' });
+
+        reply({ hello: 'world' });
+      },
+    });
+
+    var handler = function(type, request, data) {
+      if (type === 'request' && data.data.test) {
+        switch (data.data.test) {
+          case 'includeTags':
+            this.includeTags = true;
+            this.joinTags = false;
+            break;
+          case 'joinTags':
+            this.includeTags = true;
+            this.joinTags = true;
+            break;
+          case 'includeData':
+            this.includeData = false;
+            break;
+          case 'mergeData':
+            this.mergeData = true;
+            break;
+          case 'mergeData delete id':
+            this.mergeData = true;
+            data.data.id = request.id;
+            break;
+          case 'mergeData not object':
+            this.mergeData = true;
+            data.data = 123;
+            break;
+          case 'mergeData array':
+            this.mergeData = true;
+            data.data = [1, 2, 3];
+            break;
+          case 'skipUndefined':
+            this.skipUndefined = false;
+            data.data = undefined;
+            break;
+        }
+      }
+    };
+
+    server.register({
+      register: require('../lib'),
+      options: { logger: logger, handler: handler },
+    }, function(err) {
+      expect(err).not.to.exist();
+
+      server.inject('/', function() {
+        done();
+      });
+    });
+  });
+
+  lab.test('skip log handling', function(done) {
+    var logger = make();
+    var server = new hapi.Server();
+    server.connection();
+
+    server.route({
+      method: 'GET',
+      path: '/',
+      handler: function(request, reply) {
+        var tags = {};
+
+        request.connection.emit('log', 'skip', tags);
+        request.connection.emit('request', request, 'skip', tags);
+        request.connection.emit('request-internal', request, 'skip', tags);
+        request.connection.emit('request-error', request, 'skip', tags);
+
+        reply({ hello: 'world' });
+      },
+    });
+
+    var handler = function() {
+      for (var i = 0; i < arguments.length; i++) {
+        if (arguments[i] === 'skip') {
+          return true;
+        }
+      }
+    };
+
+    server.register({
+      register: require('../lib'),
+      options: { logger: logger, handler: handler },
+    }, function(err) {
+      expect(err).not.to.exist();
+
+      server.inject('/', function() {
+        var records = logger.buffer.records;
+
+        expect(records.length).to.equal(2);
 
         done();
       });
