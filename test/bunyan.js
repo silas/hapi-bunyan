@@ -1,50 +1,41 @@
 'use strict';
 
-/* jshint expr: true */
-
 /**
  * Module dependencies.
  */
 
+var bunyan = require('bunyan');
 var expect = require('code').expect;
 var hapi = require('hapi');
-
-/**
- * Logger.
- */
-
-var LEVELS = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
-
-function Logger() {
-  this.data = {};
-  this.reset();
-}
-
-Logger.prototype.reset = function() {
-  var self = this;
-
-  LEVELS.forEach(function(level) {
-    self[level] = self.log(level);
-  });
-};
-
-Logger.prototype.log = function(level) {
-  var data = this.data[level] = [];
-
-  return function() {
-    data.push(Array.prototype.slice.call(arguments));
-  };
-};
-
-Logger.prototype.child = function() {
-  return this;
-};
 
 /**
  * Lab.
  */
 
 var lab = exports.lab = require('lab').script();
+
+/**
+ * Helpers
+ */
+
+function make() {
+  var buffer = new bunyan.RingBuffer({ limit: 100 });
+
+  var logger = bunyan.createLogger({
+    name: 'test',
+    streams: [
+      {
+        level: 'trace',
+        type: 'raw',
+        stream: buffer,
+      },
+    ],
+  });
+
+  logger.buffer = buffer;
+
+  return logger;
+}
 
 /**
  * Plugin.
@@ -79,7 +70,7 @@ lab.experiment('bunyan', function() {
   });
 
   lab.test('log event', function(done) {
-    var logger = new Logger();
+    var logger = make();
     var server = new hapi.Server();
     server.connection();
 
@@ -115,7 +106,7 @@ lab.experiment('bunyan', function() {
   });
 
   lab.test('request event', function(done) {
-    var logger = new Logger();
+    var logger = make();
     var server = new hapi.Server();
     server.connection();
 
@@ -126,10 +117,6 @@ lab.experiment('bunyan', function() {
         request.log(['tester'], 'hello world');
         request.log.trace('test-trace');
         request.log.error('test-error');
-
-        LEVELS.forEach(function(level) {
-          expect(request.log).to.include(level);
-        });
 
         reply({ hello: 'world' });
       },
@@ -144,25 +131,26 @@ lab.experiment('bunyan', function() {
       expect(err).not.to.exist();
 
       server.inject('/', function() {
-        var helloEntry;
+        var records = logger.buffer.records;
 
-        logger.data.info.forEach(function(data) {
-          expect(data).to.be.an.array();
-          expect(data).to.not.be.empty();
-          expect(data[0]).to.include('req_id');
+        expect(records[0].level).to.equal(20);
+        expect(records[0].data).to.include('method');
+        expect(records[0].data).to.include('url');
+        expect(records[0].data).to.include('agent');
+        expect(records[0].msg).to.equal('');
 
-          if (data[1]) helloEntry = data;
-        });
+        expect(records[1].level).to.equal(30);
+        expect(records[1].msg).to.equal('hello world');
 
-        expect(helloEntry[1]).to.equal('hello world');
+        expect(records[2].level).to.equal(10);
+        expect(records[2].msg).to.equal('test-trace');
 
-        ['error', 'trace'].forEach(function(level) {
-          var l = logger.data[level];
+        expect(records[3].level).to.equal(50);
+        expect(records[3].msg).to.equal('test-error');
 
-          expect(l).to.be.an.array();
-          expect(l).to.not.be.empty();
-          expect(l[0][0]).to.equal('test-' + level);
-        });
+        expect(records[4].level).to.equal(20);
+        expect(records[4].data).to.include('msec');
+        expect(records[4].msg).to.equal('');
 
         done();
       });
@@ -170,7 +158,7 @@ lab.experiment('bunyan', function() {
   });
 
   lab.test('request error', function(done) {
-    var logger = new Logger();
+    var logger = make();
     var server = new hapi.Server({ debug: false });
     server.connection();
 
@@ -191,6 +179,16 @@ lab.experiment('bunyan', function() {
       expect(err).not.to.exist();
 
       server.inject('/', function() {
+        var records = logger.buffer.records;
+
+        expect(records[1].level).to.equal(50);
+
+        expect(records[1]).to.include('err');
+        expect(records[1].err.message).to.equal('Uncaught error: fail');
+        expect(records[1].err.name).to.include('Error');
+        expect(records[1].err).to.include('stack');
+        expect(records[1].msg).to.equal('Uncaught error: fail');
+
         done();
       });
     });
